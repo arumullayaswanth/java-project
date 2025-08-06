@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: spring-boot-app-service
 spec:
-  type: NodePort
+  type: LoadBalancer # <--- Changed from NodePort
   ports:
-  - name: http
-    port: 80
-    targetPort: 8080
-    protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
   selector:
     app: spring-boot-app

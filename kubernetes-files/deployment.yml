@@ -15,7 +15,7 @@ spec:
         app: spring-boot-app
     spec:
       containers:
-      - name: spring-boot-app
-        image: abhishekf5/ultimate-cicd:replaceImageTag
-        ports:
-        - containerPort: 8080
+        - name: spring-boot-app
+          image: abhishekf5/ultimate-cicd:latest # <--- Update this to your real tag (e.g., v1.0.0)
+          ports:
+            - containerPort: 8080
