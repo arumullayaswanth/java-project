@@ -52,7 +52,7 @@ pipeline {
         stage('Unit Test Report') {
             steps {
                 dir('spring-boot-app') {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit 'target/surefire-reports/*.xml'
                 }
             }
         }
