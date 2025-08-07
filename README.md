@@ -433,7 +433,56 @@ This allows SonarQube to notify Jenkins after analysis is complete.
 9. Copy the **Webhook URL** (e.g., `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX`)
 
 
-### **11.2. Store the Webhook in Jenkins as a Secret**
+---
+
+### **🔑11.2: Add Bot Permissions (Scopes)**
+
+1. In your app, go to **OAuth & Permissions**
+2. Scroll to **“Bot Token Scopes”**
+3. Click **“Add an OAuth Scope”** and add the following:
+
+| Scope           | What It Does                            |
+| --------------- | --------------------------------------- |
+| `chat:write`    | Send messages to Slack channels         |
+| `files:write`   | Upload files (like reports, logs, etc.) |
+| `channels:read` | (Optional) To access channel info       |
+
+✅ After adding scopes → **Click “Install App to Workspace”** at the top
+➡️ Approve the permissions
+
+---
+
+### **🧪11.3: Get Your Bot Token**
+
+After installing, you’ll see your **Bot User OAuth Token**:
+
+```
+xoxb-1234567890-abcdefg...
+```
+
+🔒 This is your **`SLACK_BOT_TOKEN`** — copy it and **do NOT share it** publicly.
+
+---
+
+### **🔐11.4: Store the Token in Jenkins Credentials**
+
+1. Open **Jenkins**
+2. Go to **Manage Jenkins > Credentials**
+3. Choose **(global)** domain
+4. Click **“Add Credentials”**
+5. Fill in:
+
+| Field       | Value                                       |
+| ----------- | ------------------------------------------- |
+| Kind        | `Secret text`                               |
+| Secret      | Paste your `xoxb-...` bot token             |
+| ID          | `SLACK_BOT_TOKEN`                           |
+| Description | Slack bot token for file uploads (optional) |
+
+Click **OK** ✅
+
+
+### **11.5. Store the Webhook in Jenkins as a Secret**
 
 > So you don’t hardcode it in your Jenkinsfile.
 

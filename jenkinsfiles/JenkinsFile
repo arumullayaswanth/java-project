@@ -229,14 +229,17 @@ pipeline {
                 expression { return env.SLACK_WEBHOOK_URL != null }
             }
             steps {
-                // Ensure required files exist or create dummy files
                 sh 'if [ ! -f trivyfs.txt ]; then echo "No trivyfs report found" > trivyfs.txt; fi'
                 sh 'if [ ! -f trivyimage.txt ]; then echo "No trivy image report found" > trivyimage.txt; fi'
                 sh 'if [ ! -f dependency-check-report.xml ]; then echo "No dependency check report found" > dependency-check-report.xml; fi'
 
-                withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_WEBHOOK_URL')]) {
+                withCredentials([
+                    string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_WEBHOOK_URL'),
+                    string(credentialsId: 'SLACK_BOT_TOKEN', variable: 'SLACK_BOT_TOKEN')
+                ]) {
                     script {
-                        def messageBlock = currentBuild.currentResult == 'SUCCESS' ? """
+                        def isSuccess = currentBuild.currentResult == 'SUCCESS'
+                        def messageBlock = isSuccess ? """
                             {
                                 "type": "header",
                                 "text": { "type": "plain_text", "text": "🦋 Deployment Complete! 🦋" }
@@ -246,11 +249,6 @@ pipeline {
                                 "text": {
                                     "type": "mrkdwn",
                                     "text": ":white_check_mark: *Build Status:* `SUCCESS`\n*Build Number:* #${BUILD_NUMBER}\n*Environment:* _Production_\n*Service:* *demo-service*"
-                                },
-                                "accessory": {
-                                    "type": "image",
-                                    "image_url": "https://media.giphy.com/media/xThtam4bZsG4j6hGzK/giphy.gif",
-                                    "alt_text": "butterfly"
                                 }
                             }
                         """ : """
@@ -263,17 +261,13 @@ pipeline {
                                 "text": {
                                     "type": "mrkdwn",
                                     "text": ":x: *Build Status:* `FAILURE`\n*Build Number:* #${BUILD_NUMBER}\n*Environment:* _Production_\n*Service:* *demo-service*"
-                                },
-                                "accessory": {
-                                    "type": "image",
-                                    "image_url": "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif",
-                                    "alt_text": "failure"
                                 }
                             }
                         """
 
                         def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
 
+                        // Send Slack message via Webhook
                         sh """
                             curl -X POST -H 'Content-type: application/json' --data '{
                                 "blocks": [
@@ -283,53 +277,37 @@ pipeline {
                                         "elements": [
                                             {
                                                 "type": "button",
-                                                "text": {
-                                                    "type": "plain_text",
-                                                    "text": "🔍 View Logs"
-                                                },
+                                                "text": { "type": "plain_text", "text": "🔍 View Logs" },
                                                 "url": "${env.BUILD_URL}"
-                                            },
-                                            {
-                                                "type": "button",
-                                                "text": {
-                                                    "type": "plain_text",
-                                                    "text": "🌐 View Dashboard"
-                                                },
-                                                "url": "https://your-monitoring-dashboard-url"
-                                            }
-                                        ]
-                                    },
-                                    { "type": "divider" },
-                                    {
-                                        "type": "context",
-                                        "elements": [
-                                            {
-                                                "type": "mrkdwn",
-                                                "text": "*My name is Yaswanth Reddy Arumulla* 💖 with ✨ fancy style!"
-                                            },
-                                            {
-                                                "type": "plain_text",
-                                                "text": "🛠 Triggered by: Jenkins CI/CD"
                                             }
                                         ]
                                     },
                                     {
                                         "type": "context",
                                         "elements": [
-                                            {
-                                                "type": "plain_text",
-                                                "text": "📅 Timestamp: ${timestamp}"
-                                            }
+                                            { "type": "plain_text", "text": "📅 Timestamp: ${timestamp}" }
                                         ]
                                     }
                                 ]
                             }' $SLACK_WEBHOOK_URL
                         """
+
+                        // Upload files via Slack Bot Token
+                        def files = ['trivyfs.txt', 'trivyimage.txt', 'dependency-check-report.xml']
+                        def slackChannel = "#devops-alert"  // 👈 Use your actual channel name //replace you changes name
+                        for (file in files) {
+                            sh """
+                                curl -F file=@${file} \
+                                    -F "initial_comment=📎 Report: ${file}" \
+                                    -F channels=${slackChannel} \
+                                    -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+                                    https://slack.com/api/files.upload
+                            """
+                        }
                     }
                 }
             }
         }
-
 
     }
 }
