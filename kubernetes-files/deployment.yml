@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: spring-boot-app
-          image: abhishekf5/ultimate-cicd:latest # <--- Update this to your real tag (e.g., v1.0.0)
+          image: 242201296943.dkr.ecr.us-east-1.amazonaws.com/javaapp:8
           ports:
             - containerPort: 8080
