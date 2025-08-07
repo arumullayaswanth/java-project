@@ -499,6 +499,23 @@ Click **OK** ✅
 * **ID:** `SLACK_WEBHOOK_URL` (You must use this exact ID or change it in your Jenkinsfile)
 * **Description:** `Slack Webhook for Jenkins Notifications`
 
+---
+
+### 🛠️ **11.6. Invite the Bot**
+
+1. Open your Slack workspace.
+
+2. Go to the `#devops-alert` channel.
+
+3. In the message box, type:
+
+   ```
+   /invite @YourBotName
+   ```
+
+   Replace `@YourBotName` with the actual name of your app (e.g., `JenkinsNotifier`).
+
+4. Hit Enter.
 
 
 ---

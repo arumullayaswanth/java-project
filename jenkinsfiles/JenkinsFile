@@ -301,15 +301,15 @@ pipeline {
                                 continue
                             }
 
-                            withEnv(["BOT_TOKEN=$SLACK_BOT_TOKEN"]) {
-                                sh """
-                                    curl -F file=@${file} \\
-                                        -F "initial_comment=:paperclip: Report: ${file}" \\
-                                        -F channels=${slackChannel} \\
-                                        -H "Authorization: Bearer \$BOT_TOKEN" \\
-                                        https://slack.com/api/files.upload
-                                """
-                            }
+                            echo "📤 Uploading ${file} to Slack..."
+
+                            // Upload via slack CLI
+                            sh """
+                                slack file upload ${file} \
+                                --channel ${slackChannel} \
+                                --title "${file}" \
+                                --initial-comment ":paperclip: Report: ${file}"
+                            """
                         }
                     }
                 }
