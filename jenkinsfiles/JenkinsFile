@@ -39,10 +39,12 @@ pipeline {
                 sh 'ls -la' // verfy files after checkout
             }
         }
-        // no change in this stage
+
+        // Maven Build
         stage('Maven Build') {
             steps {
                 dir('spring-boot-app') {
+                    // Clean and compile code, run unit tests
                     sh 'mvn clean install'
                 }
             }
@@ -52,6 +54,10 @@ pipeline {
         stage('Unit Test Report') {
             steps {
                 dir('spring-boot-app') {
+                    // Confirm reports exist before archiving
+                    sh 'ls -l target/surefire-reports || echo "No test reports found!"'
+
+                    // Collect test reports
                     junit 'target/surefire-reports/*.xml'
                 }
             }
@@ -61,10 +67,13 @@ pipeline {
         stage('Code Coverage') {
             steps {
                 dir('spring-boot-app') {
-                    sh 'mvn jacoco:prepare-agent test jacoco:report'
-                    jacoco execPattern: '**/target/jacoco.exec',
-                          classPattern: '**/target/classes',
-                          sourcePattern: '**/src/main/java'
+                    // Run tests with JaCoCo enabled
+                    sh 'mvn clean verify jacoco:report'
+
+                    // Publish code coverage report
+                    jacoco execPattern: 'target/jacoco.exec',
+                        classPattern: 'target/classes',
+                        sourcePattern: 'src/main/java'
                 }
             }
         }
@@ -73,6 +82,7 @@ pipeline {
         stage('Package Artifact') {
             steps {
                 dir('spring-boot-app') {
+                    // Build the JAR file (skip tests to save time)
                     sh 'mvn package -DskipTests'
                 }
             }
@@ -81,10 +91,12 @@ pipeline {
         // Archive Build Artifact
         stage('Archive Artifact') {
             steps {
+                // Archive the generated JAR from the correct path
                 archiveArtifacts artifacts: 'spring-boot-app/target/*.jar', fingerprint: true
             }
         }
 
+       
         // no change in this stage Except dir name=dir('javaapp')
         stage('Sonarqube Analysis') {
             steps {
