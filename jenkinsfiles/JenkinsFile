@@ -225,9 +225,6 @@ pipeline {
             }
         }
         stage('Notify Slack') {
-            when {
-                expression { return env.SLACK_WEBHOOK_URL != null }
-            }
             steps {
                 sh 'if [ ! -f trivyfs.txt ]; then echo "No trivyfs report found" > trivyfs.txt; fi'
                 sh 'if [ ! -f trivyimage.txt ]; then echo "No trivy image report found" > trivyimage.txt; fi'
