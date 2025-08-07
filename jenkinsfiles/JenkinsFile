@@ -266,7 +266,7 @@ pipeline {
                             }
                         """
 
-                        // Send message via Slack webhook
+                        // Slack message via webhook
                         sh """
                             curl -X POST -H 'Content-type: application/json' --data '{
                                 "blocks": [
@@ -291,13 +291,13 @@ pipeline {
                             }' $SLACK_WEBHOOK_URL
                         """
 
-                        // Upload report files
+                        // Upload files using Slack CLI
                         def files = ['trivyfs.txt', 'trivyimage.txt', 'dependency-check-report.xml']
-                        def slackChannel = "devops-alert" // No #
+                        def slackChannel = "devops-alert" // No '#'
 
                         for (file in files) {
                             if (!fileExists(file)) {
-                                echo "File ${file} does not exist. Skipping upload."
+                                echo "⚠️ File ${file} not found. Skipping upload."
                                 continue
                             }
 
@@ -315,5 +315,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
