@@ -236,6 +236,10 @@ pipeline {
                 ]) {
                     script {
                         def isSuccess = currentBuild.currentResult == 'SUCCESS'
+                        def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
+                        def buildUrl = env.BUILD_URL
+                        def buildNum = env.BUILD_NUMBER
+
                         def messageBlock = isSuccess ? """
                             {
                                 "type": "header",
@@ -245,7 +249,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":white_check_mark: *Build Status:* `SUCCESS`\n*Build Number:* #${BUILD_NUMBER}\n*Environment:* _Production_\n*Service:* *demo-service*"
+                                    "text": ":white_check_mark: *Build Status:* \`SUCCESS\`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
                                 }
                             }
                         """ : """
@@ -257,14 +261,12 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":x: *Build Status:* `FAILURE`\n*Build Number:* #${BUILD_NUMBER}\n*Environment:* _Production_\n*Service:* *demo-service*"
+                                    "text": ":x: *Build Status:* \`FAILURE\`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
                                 }
                             }
                         """
 
-                        def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
-
-                        // Send Slack message via Webhook
+                        // Send message via Slack webhook
                         sh """
                             curl -X POST -H 'Content-type: application/json' --data '{
                                 "blocks": [
@@ -275,7 +277,7 @@ pipeline {
                                             {
                                                 "type": "button",
                                                 "text": { "type": "plain_text", "text": "🔍 View Logs" },
-                                                "url": "${env.BUILD_URL}"
+                                                "url": "${buildUrl}"
                                             }
                                         ]
                                     },
@@ -289,9 +291,9 @@ pipeline {
                             }' $SLACK_WEBHOOK_URL
                         """
 
-                        // Upload files via Slack Bot Token
+                        // Upload report files
                         def files = ['trivyfs.txt', 'trivyimage.txt', 'dependency-check-report.xml']
-                        def slackChannel = "devops-alert"  // ✅ Do NOT include the '#' symbol
+                        def slackChannel = "devops-alert" // No #
 
                         for (file in files) {
                             if (!fileExists(file)) {
@@ -299,18 +301,19 @@ pipeline {
                                 continue
                             }
 
-                            sh """
-                                curl -F file=@${file} \\
-                                    -F "initial_comment=:paperclip: Report: ${file}" \\
-                                    -F channels=${slackChannel} \\
-                                    -H "Authorization: Bearer $SLACK_BOT_TOKEN" \\
-                                    https://slack.com/api/files.upload
-                            """
+                            withEnv(["BOT_TOKEN=$SLACK_BOT_TOKEN"]) {
+                                sh """
+                                    curl -F file=@${file} \\
+                                        -F "initial_comment=:paperclip: Report: ${file}" \\
+                                        -F channels=${slackChannel} \\
+                                        -H "Authorization: Bearer \$BOT_TOKEN" \\
+                                        https://slack.com/api/files.upload
+                                """
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 }
