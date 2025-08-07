@@ -214,7 +214,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":white_check_mark: *Build Status:* \`SUCCESS\`\\n*Build Number:* #${BUILD_NUMBER}\\n*Environment:* _Production_\\n*Service:* *demo-service*"
+                                    "text": ":white_check_mark: *Build Status:* `SUCCESS`\n*Build Number:* #${BUILD_NUMBER}\n*Environment:* _Production_\n*Service:* *demo-service*"
                                 },
                                 "accessory": {
                                     "type": "image",
@@ -231,7 +231,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":x: *Build Status:* \`FAILURE\`\\n*Build Number:* #${BUILD_NUMBER}\\n*Environment:* _Production_\\n*Service:* *demo-service*"
+                                    "text": ":x: *Build Status:* `FAILURE`\n*Build Number:* #${BUILD_NUMBER}\n*Environment:* _Production_\n*Service:* *demo-service*"
                                 },
                                 "accessory": {
                                     "type": "image",
@@ -240,6 +240,8 @@ pipeline {
                                 }
                             }
                         """
+
+                        def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
 
                         sh """
                             curl -X POST -H 'Content-type: application/json' --data '{
@@ -285,7 +287,7 @@ pipeline {
                                         "elements": [
                                             {
                                                 "type": "plain_text",
-                                                "text": "📅 Timestamp: $(date +\"%Y-%m-%d %H:%M:%S\")"
+                                                "text": "📅 Timestamp: ${timestamp}"
                                             }
                                         ]
                                     }
@@ -296,6 +298,7 @@ pipeline {
                 }
             }
         }
+
 
     }
 }
