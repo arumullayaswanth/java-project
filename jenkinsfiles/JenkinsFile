@@ -316,19 +316,18 @@ pipeline {
                             }
 
                             echo "📤 Uploading ${file} to Slack..."
-
-                            sh """
-                                slack file upload ${file} \
-                                --channel ${slackChannel} \
-                                --title "${file}" \
-                                --initial-comment ":paperclip: Report: ${file}" \
-                                --token ${SLACK_BOT_TOKEN}
-                            """
+                            withEnv(["SLACK_TOKEN=${SLACK_BOT_TOKEN}"]) {
+                                sh """
+                                    ~/.slack/bin/slack file upload ${file} \
+                                    --channel ${slackChannel} \
+                                    --title "${file}" \
+                                    --initial-comment ":paperclip: Report: ${file}"
+                                """
+                            } 
                         }
                     }
                 }
             }
         }
-
     }
 }
