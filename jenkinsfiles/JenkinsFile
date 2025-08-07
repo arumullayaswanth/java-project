@@ -229,7 +229,12 @@ pipeline {
                 PATH = "$HOME/.slack/bin:$PATH"  // Make slack CLI available in this stage
             }
             steps {
-                // Install Slack CLI only if missing
+                // Create placeholder files if not found
+                sh 'if [ ! -f trivyfs.txt ]; then echo "No trivyfs report found" > trivyfs.txt; fi'
+                sh 'if [ ! -f trivyimage.txt ]; then echo "No trivy image report found" > trivyimage.txt; fi'
+                sh 'if [ ! -f dependency-check-report.xml ]; then echo "No dependency check report found" > dependency-check-report.xml; fi'
+
+                // Install Slack CLI if not found
                 sh '''
                     if ! command -v slack &> /dev/null; then
                         echo "📦 Installing Slack CLI..."
@@ -238,13 +243,6 @@ pipeline {
                     else
                         echo "✅ Slack CLI already installed"
                     fi
-                '''
-
-                // Ensure files exist
-                sh '''
-                    [ -f trivyfs.txt ] || echo "No trivyfs report found" > trivyfs.txt
-                    [ -f trivyimage.txt ] || echo "No trivy image report found" > trivyimage.txt
-                    [ -f dependency-check-report.xml ] || echo "No dependency check report found" > dependency-check-report.xml
                 '''
 
                 withCredentials([
@@ -257,7 +255,6 @@ pipeline {
                         def buildUrl = env.BUILD_URL
                         def buildNum = env.BUILD_NUMBER
 
-                        // Build message block
                         def messageBlock = isSuccess ? """
                             {
                                 "type": "header",
@@ -284,7 +281,7 @@ pipeline {
                             }
                         """
 
-                        // Send Slack message using Webhook
+                        // Send Slack message
                         sh """
                             curl -X POST -H 'Content-type: application/json' --data '{
                                 "blocks": [
@@ -309,9 +306,8 @@ pipeline {
                             }' $SLACK_WEBHOOK_URL
                         """
 
-                        // Upload generated report files to Slack using Slack CLI
                         def files = ['trivyfs.txt', 'trivyimage.txt', 'dependency-check-report.xml']
-                        def slackChannel = "devops-alert"  // Use Slack channel name (not ID) for Slack CLI
+                        def slackChannelId = "C0997D6JBEW" // Replace with your actual channel ID
 
                         for (file in files) {
                             if (!fileExists(file)) {
@@ -321,15 +317,16 @@ pipeline {
 
                             echo "📤 Uploading ${file} to Slack..."
 
-                            // Upload using Slack CLI
-                            withEnv(["SLACK_TOKEN=${SLACK_BOT_TOKEN}"]) {
+                            withCredentials([string(credentialsId: 'SLACK_BOT_TOKEN', variable: 'SLACK_BOT_TOKEN')]) {
                                 sh """
-                                    slack file upload ${file} \
-                                        --channel ${slackChannel} \
-                                        --title "${file}" \
-                                        --initial-comment ":paperclip: Report: ${file}"
+                                    curl -F file=@${file} \
+                                        -F "initial_comment=:paperclip: Report: ${file}" \
+                                        -F channels=${slackChannelId} \
+                                        -H "Authorization: Bearer \$SLACK_BOT_TOKEN" \
+                                        https://slack.com/api/files.upload
                                 """
                             }
+
                         }
                     }
                 }
