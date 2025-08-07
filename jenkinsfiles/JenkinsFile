@@ -307,7 +307,7 @@ pipeline {
                         """
 
                         def files = ['trivyfs.txt', 'trivyimage.txt', 'dependency-check-report.xml']
-                        def slackChannel = "devops-alert"
+                        def slackChannelId = "C0997D6JBEW" // Replace with your actual channel ID
 
                         for (file in files) {
                             if (!fileExists(file)) {

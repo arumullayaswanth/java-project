@@ -518,6 +518,25 @@ Click **OK** ✅
 4. Hit Enter.
 
 
+## ✅  Use Slack UI (Easiest)
+
+1. **Open** the `#devops-alert` channel in your Slack app or browser.
+
+2. Click the **channel name at the top** to open details.
+
+3. Select **“More” > “Copy channel ID”**
+   OR
+   Look at your browser’s URL:
+
+   ```
+   https://app.slack.com/client/T012ABCDEF/C01234567
+                                       ↑ this is the channel ID
+   ```
+
+---
+
+
+
 ---
 
 ## 🛠️ Step 12: Create a Jenkins Pipeline Job (Create EKS Cluster)
