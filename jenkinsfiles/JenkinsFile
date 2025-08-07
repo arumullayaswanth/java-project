@@ -225,18 +225,20 @@ pipeline {
             }
         }
         stage('Notify Slack') {
+            environment {
+                PATH = "$HOME/.slack/bin:$PATH"  // Make slack CLI available in this stage
+            }
             steps {
                 // Create placeholder files if not found
                 sh 'if [ ! -f trivyfs.txt ]; then echo "No trivyfs report found" > trivyfs.txt; fi'
                 sh 'if [ ! -f trivyimage.txt ]; then echo "No trivy image report found" > trivyimage.txt; fi'
                 sh 'if [ ! -f dependency-check-report.xml ]; then echo "No dependency check report found" > dependency-check-report.xml; fi'
 
-                // Install Slack CLI (only if not already installed)
+                // Install Slack CLI if not found
                 sh '''
                     if ! command -v slack &> /dev/null; then
                         echo "📦 Installing Slack CLI..."
                         curl -sSf https://downloads.slack-edge.com/slack-cli/install.sh | sh
-                        export PATH="$HOME/.slack/bin:$PATH"
                         echo 'export PATH="$HOME/.slack/bin:$PATH"' >> ~/.bashrc
                     else
                         echo "✅ Slack CLI already installed"
@@ -253,7 +255,6 @@ pipeline {
                         def buildUrl = env.BUILD_URL
                         def buildNum = env.BUILD_NUMBER
 
-                        // Slack message block
                         def messageBlock = isSuccess ? """
                             {
                                 "type": "header",
@@ -263,7 +264,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":white_check_mark: *Build Status:* `SUCCESS`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
+                                    "text": ":white_check_mark: *Build Status:* `SUCCESS`\\n*Build Number:* #${buildNum}\\n*Environment:* _Production_\\n*Service:* *demo-service*"
                                 }
                             }
                         """ : """
@@ -275,7 +276,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":x: *Build Status:* `FAILURE`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
+                                    "text": ":x: *Build Status:* `FAILURE`\\n*Build Number:* #${buildNum}\\n*Environment:* _Production_\\n*Service:* *demo-service*"
                                 }
                             }
                         """
@@ -305,7 +306,6 @@ pipeline {
                             }' $SLACK_WEBHOOK_URL
                         """
 
-                        // Upload reports
                         def files = ['trivyfs.txt', 'trivyimage.txt', 'dependency-check-report.xml']
                         def slackChannel = "devops-alert"
 
@@ -318,7 +318,6 @@ pipeline {
                             echo "📤 Uploading ${file} to Slack..."
 
                             sh """
-                                export PATH="$HOME/.slack/bin:$PATH"
                                 slack file upload ${file} \
                                 --channel ${slackChannel} \
                                 --title "${file}" \
@@ -330,5 +329,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
