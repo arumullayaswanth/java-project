@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: spring-boot-app
-          image: 242201296943.dkr.ecr.us-east-1.amazonaws.com/javaapp:8
+          image: 242201296943.dkr.ecr.us-east-1.amazonaws.com/javaapp:9
           ports:
             - containerPort: 8080
