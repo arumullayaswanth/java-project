@@ -321,7 +321,7 @@ pipeline {
                                 sh """
                                     curl -F file=@${file} \
                                         -F "initial_comment=:paperclip: Report: ${file}" \
-                                        -F channels=${slackChannel} \
+                                        -F channels=${slackChannelId} \
                                         -H "Authorization: Bearer \$SLACK_BOT_TOKEN" \
                                         https://slack.com/api/files.upload
                                 """
