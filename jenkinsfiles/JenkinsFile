@@ -316,14 +316,17 @@ pipeline {
                             }
 
                             echo "📤 Uploading ${file} to Slack..."
-                            withEnv(["SLACK_TOKEN=${SLACK_BOT_TOKEN}"]) {
+
+                            withCredentials([string(credentialsId: 'SLACK_BOT_TOKEN', variable: 'SLACK_BOT_TOKEN')]) {
                                 sh """
-                                    ~/.slack/bin/slack file upload ${file} \
-                                    --channel ${slackChannel} \
-                                    --title "${file}" \
-                                    --initial-comment ":paperclip: Report: ${file}"
+                                    curl -F file=@${file} \
+                                        -F "initial_comment=:paperclip: Report: ${file}" \
+                                        -F channels=${slackChannel} \
+                                        -H "Authorization: Bearer \$SLACK_BOT_TOKEN" \
+                                        https://slack.com/api/files.upload
                                 """
-                            } 
+                            }
+
                         }
                     }
                 }
