@@ -249,7 +249,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":white_check_mark: *Build Status:* \`SUCCESS\`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
+                                    "text": ":white_check_mark: *Build Status:* `SUCCESS`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
                                 }
                             }
                         """ : """
@@ -261,7 +261,7 @@ pipeline {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": ":x: *Build Status:* \`FAILURE\`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
+                                    "text": ":x: *Build Status:* `FAILURE`\n*Build Number:* #${buildNum}\n*Environment:* _Production_\n*Service:* *demo-service*"
                                 }
                             }
                         """
